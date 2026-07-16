@@ -8,6 +8,7 @@ const transactionRoutes = require("./routes/transactions");
 const authRoutes = require("./routes/auth");
 const protect = require("./middleware/authMiddleware");
 const userRoutes = require("./routes/users");
+const { connectRedis } = require("./config/redis");
 
 const app = express();
 const PORT = process.env.PORT || 5050;
@@ -25,8 +26,10 @@ app.get("/", (req, res) => {
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log("MongoDB connected successfully");
+
+    await connectRedis();
 
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);

@@ -2,6 +2,12 @@ const express = require("express");
 const Product = require("../models/Product");
 const StockTransaction = require("../models/StockTransaction");
 const authorizeRoles = require("../middleware/roleMiddleware");
+const {
+  getCache,
+  setCache,
+  getProductCacheVersion,
+  invalidateProductCache,
+} = require("../config/redis");
 
 const router = express.Router();
 
@@ -12,6 +18,14 @@ const escapeRegex = (value) => {
 // Get paginated products with optional search and filters.
 router.get("/", async (req, res) => {
   try {
+    const cacheVersion = await getProductCacheVersion();
+    const cacheKey = `products:${cacheVersion}:${req.originalUrl}`;
+    const cachedProducts = await getCache(cacheKey);
+
+    if (cachedProducts) {
+      return res.json(cachedProducts);
+    }
+
     const requestedPage = Number.parseInt(req.query.page, 10);
     const requestedLimit = Number.parseInt(req.query.limit, 10);
     const page = Number.isNaN(requestedPage) ? 1 : Math.max(requestedPage, 1);
@@ -75,7 +89,7 @@ router.get("/", async (req, res) => {
       inventoryValue: 0,
     };
 
-    res.json({
+    const response = {
       products,
       pagination: {
         page,
@@ -92,7 +106,10 @@ router.get("/", async (req, res) => {
         inventoryValue: summary.inventoryValue,
       },
       categories: categories.filter(Boolean).sort(),
-    });
+    };
+
+    await setCache(cacheKey, response);
+    res.json(response);
   } catch (error) {
     res.status(500).json({ message: "Could not fetch products" });
   }
@@ -114,6 +131,8 @@ router.post("/", authorizeRoles("admin"), async (req, res) => {
         note: initialStockNote?.trim() || "Initial stock",
       });
     }
+
+    await invalidateProductCache();
 
     res.status(201).json(product);
   } catch (error) {
@@ -163,6 +182,8 @@ router.post("/:id/stock", async (req, res) => {
       note,
     });
 
+    await invalidateProductCache();
+
     res.json({
       message: "Stock updated successfully.",
       product,
@@ -180,6 +201,8 @@ router.delete("/:id", authorizeRoles("admin"), async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found." });
     }
+
+    await invalidateProductCache();
 
     res.json({ message: "Product deleted successfully." });
   } catch (error) {
@@ -210,6 +233,8 @@ router.put("/:id", authorizeRoles("admin"), async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found." });
     }
+
+    await invalidateProductCache();
 
     res.json(product);
   } catch (error) {
