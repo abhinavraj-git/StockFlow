@@ -4,7 +4,7 @@ A full-stack inventory management system built with the MERN stack. StockFlow he
 
 **Live Demo:** [https://stockflow-client-jnu9.onrender.com](https://stockflow-client-jnu9.onrender.com)
 
-> ⚠️ Note: The backend is hosted on Render's free tier, so it may take 30-50 seconds to spin up on the first request after a period of inactivity.
+> Note: The backend is hosted on Render's free tier, so it may take 30-50 seconds to spin up on the first request after a period of inactivity.
 
 ## Screenshots
 
@@ -30,6 +30,7 @@ A full-stack inventory management system built with the MERN stack. StockFlow he
 - **Low Stock Alerts** — Automatic flagging when inventory falls below reorder level
 - **Search & Filter** — Find products by name, category, or stock status
 - **User Management** — Admin panel to manage user roles
+- **Redis Caching** — Server-side caching for product data to reduce database load and speed up repeated requests
 
 ## Tech Stack
 
@@ -41,6 +42,7 @@ A full-stack inventory management system built with the MERN stack. StockFlow he
 - Node.js
 - Express.js
 - MongoDB (Mongoose)
+- Redis (caching)
 - JWT for authentication
 
 **Deployment**
@@ -53,8 +55,15 @@ A full-stack inventory management system built with the MERN stack. StockFlow he
 ### Prerequisites
 - Node.js installed
 - MongoDB Atlas account (or local MongoDB instance)
+- Redis installed locally (e.g. via Homebrew: `brew install redis`)
 
-### 1. Backend Setup
+### 1. Start Redis
+```bash
+redis-server
+```
+Leave this running in its own terminal tab.
+
+### 2. Backend Setup
 ```bash
 cd server
 npm install
@@ -72,7 +81,7 @@ Run the server:
 node server.js
 ```
 
-### 2. Frontend Setup
+### 3. Frontend Setup
 ```bash
 cd client
 npm install
