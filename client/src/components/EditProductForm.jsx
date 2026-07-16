@@ -25,7 +25,7 @@ function EditProductForm({ product, onClose, onProductUpdated }) {
 
     try {
       const response = await fetch(
-        `http://localhost:5050/api/products/${product._id}`,
+        `${import.meta.env.VITE_API_URL}/api/products/${product._id}`,
         {
           method: "PUT",
           headers: {

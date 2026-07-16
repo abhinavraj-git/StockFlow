@@ -7,7 +7,7 @@ function TransactionHistory({ refreshKey }) {
   useEffect(() => {
     const loadTransactions = async () => {
       try {
-        const response = await fetch("http://localhost:5050/api/transactions", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/transactions`, {
           headers: getAuthHeaders(),
         });
         const data = await response.json();

@@ -7,7 +7,7 @@ function UserManagement({ currentUser }) {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const response = await fetch("http://localhost:5050/api/users", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
           headers: getAuthHeaders(),
         });
 
@@ -29,7 +29,7 @@ function UserManagement({ currentUser }) {
   const updateRole = async (userId, role) => {
     try {
       const response = await fetch(
-        `http://localhost:5050/api/users/${userId}/role`,
+        `${import.meta.env.VITE_API_URL}/api/users/${userId}/role`,
         {
           method: "PATCH",
           headers: {

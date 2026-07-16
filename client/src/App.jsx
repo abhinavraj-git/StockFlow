@@ -8,7 +8,7 @@ import AuthPage from "./components/AuthPage";
 import { getAuthHeaders } from "./api";
 import UserManagement from "./components/UserManagement";
 
-const API_URL = "http://localhost:5050/api/products";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/products`;
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -98,7 +98,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:5050/api/products/${productId}`,
+        `${import.meta.env.VITE_API_URL}/api/products/${productId}`,
         {
           method: "DELETE",
           headers: getAuthHeaders(),

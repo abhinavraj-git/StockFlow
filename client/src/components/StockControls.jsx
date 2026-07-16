@@ -12,7 +12,7 @@ function StockControls({ productId, onStockUpdated }) {
 
     try {
       const response = await fetch(
-        `http://localhost:5050/api/products/${productId}/stock`,
+        `${import.meta.env.VITE_API_URL}/api/products/${productId}/stock`,
         {
           method: "POST",
           headers: {
