@@ -4,7 +4,7 @@ A full-stack inventory management system built with the MERN stack. StockFlow he
 
 **Live Demo:** [https://stockflow-client-jnu9.onrender.com](https://stockflow-client-jnu9.onrender.com)
 
-> Note: The backend is hosted on Render's free tier, so it may take 30-50 seconds to spin up on the first request after a period of inactivity.
+> ⚠️ Note: The backend is hosted on Render's free tier, so it may take 30-50 seconds to spin up on the first request after a period of inactivity.
 
 ## Screenshots
 
