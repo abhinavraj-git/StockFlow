@@ -239,6 +239,11 @@ button:hover {
   justify-content: space-between;
   gap: 18px;
 }
+.section-subtitle {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
 .product-tools {
   display: flex;
   align-items: center;
@@ -264,6 +269,51 @@ button:hover {
 }
 .export-button {
   background: #15803d;
+}
+
+.loading-message,
+.empty-message {
+  margin: 22px 0 0;
+  color: #64748b;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pagination > p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 7px;
+}
+
+.pagination-button {
+  min-width: 38px;
+  background: #fff;
+  border-color: #cfd9e6;
+  color: #334155;
+}
+
+.pagination-button.current-page {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.pagination-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .product-list {
@@ -584,6 +634,10 @@ button:hover {
   }
   .product-list {
     grid-template-columns: 1fr;
+  }
+  .pagination {
+    align-items: flex-start;
+    flex-direction: column;
   }
   .transaction-item,
   .user-item {

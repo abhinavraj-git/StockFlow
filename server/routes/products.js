@@ -5,11 +5,94 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
-// Get all products
+const escapeRegex = (value) => {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+// Get paginated products with optional search and filters.
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
+    const requestedPage = Number.parseInt(req.query.page, 10);
+    const requestedLimit = Number.parseInt(req.query.limit, 10);
+    const page = Number.isNaN(requestedPage) ? 1 : Math.max(requestedPage, 1);
+    const limit = Number.isNaN(requestedLimit)
+      ? 8
+      : Math.min(Math.max(requestedLimit, 1), 1000);
+    const search = req.query.search?.trim() || "";
+    const category = req.query.category || "all";
+    const lowStockOnly = req.query.lowStock === "true";
+    const filter = {};
+
+    if (search) {
+      const searchPattern = escapeRegex(search);
+      filter.$or = [
+        { name: { $regex: searchPattern, $options: "i" } },
+        { sku: { $regex: searchPattern, $options: "i" } },
+        { category: { $regex: searchPattern, $options: "i" } },
+      ];
+    }
+
+    if (category !== "all") {
+      filter.category = category;
+    }
+
+    if (lowStockOnly) {
+      filter.$expr = { $lte: ["$quantity", "$reorderLevel"] };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [products, totalProducts, categories, summaryRows, lowStockCount] =
+      await Promise.all([
+        Product.find(filter)
+          .sort({ createdAt: -1, _id: -1 })
+          .skip(skip)
+          .limit(limit)
+          .lean(),
+        Product.countDocuments(filter),
+        Product.distinct("category"),
+        Product.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalProducts: { $sum: 1 },
+              totalUnits: { $sum: "$quantity" },
+              inventoryValue: {
+                $sum: { $multiply: ["$price", "$quantity"] },
+              },
+            },
+          },
+        ]),
+        Product.countDocuments({
+          $expr: { $lte: ["$quantity", "$reorderLevel"] },
+        }),
+      ]);
+
+    const totalPages = Math.max(Math.ceil(totalProducts / limit), 1);
+    const summary = summaryRows[0] || {
+      totalProducts: 0,
+      totalUnits: 0,
+      inventoryValue: 0,
+    };
+
+    res.json({
+      products,
+      pagination: {
+        page,
+        limit,
+        totalProducts,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+      summary: {
+        totalProducts: summary.totalProducts,
+        totalUnits: summary.totalUnits,
+        lowStockCount,
+        inventoryValue: summary.inventoryValue,
+      },
+      categories: categories.filter(Boolean).sort(),
+    });
   } catch (error) {
     res.status(500).json({ message: "Could not fetch products" });
   }
@@ -18,7 +101,7 @@ router.get("/", async (req, res) => {
 // Add a product
 router.post("/", authorizeRoles("admin"), async (req, res) => {
   try {
-    const { initialNote, ...productData } = req.body;
+    const { initialStockNote, ...productData } = req.body;
 
     const product = await Product.create(productData);
 
@@ -28,7 +111,7 @@ router.post("/", authorizeRoles("admin"), async (req, res) => {
         performedBy: req.user.userId,
         type: "IN",
         quantity: product.quantity,
-        note: initialNote || "Initial stock",
+        note: initialStockNote?.trim() || "Initial stock",
       });
     }
 
