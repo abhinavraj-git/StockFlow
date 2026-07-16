@@ -14,6 +14,9 @@ A full-stack inventory management system built with the MERN stack. StockFlow he
 **Products**
 ![Products](./screenshots/products.png)
 
+**Pagination**
+![Pagination](./screenshots/pagination.png)
+
 **Activity Log**
 ![Activity](./screenshots/activity.png)
 
