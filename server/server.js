@@ -24,6 +24,15 @@ app.get("/", (req, res) => {
   res.json({ message: "StockFlow API is running!" });
 });
 
+app.get("/health", (req, res) => {
+  const databaseConnected = mongoose.connection.readyState === 1;
+
+  res.status(databaseConnected ? 200 : 503).json({
+    status: databaseConnected ? "ok" : "not_ready",
+    database: databaseConnected ? "connected" : "disconnected",
+  });
+});
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
@@ -31,10 +40,11 @@ mongoose
 
     await connectRedis();
 
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`StockFlow API listening on port ${PORT}`);
     });
   })
   .catch((error) => {
     console.error("MongoDB connection error:", error.message);
+    process.exit(1);
   });
