@@ -18,8 +18,14 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentUser, setCurrentUser] = useState(() => {
-    const savedUser = localStorage.getItem("stockflow_user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      const savedUser = localStorage.getItem("stockflow_user");
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      localStorage.removeItem("stockflow_user");
+      localStorage.removeItem("stockflow_token");
+      return null;
+    }
   });
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showLowStock, setShowLowStock] = useState(false);
@@ -338,7 +344,47 @@ function App() {
           </div>
 
           {loading ? (
-            <p className="loading-message">Loading products...</p>
+            <div className="products-loading-state" aria-live="polite">
+              <div className="loading-badge">
+                <span className="spinner-circle" aria-hidden="true"></span>
+                <span>Loading products...</span>
+              </div>
+              <div className="product-list">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <article className="product-card skeleton-card" key={index}>
+                    <div className="product-card-heading">
+                      <div style={{ flex: 1 }}>
+                        <div className="skeleton-line skeleton-title"></div>
+                        <div className="skeleton-line skeleton-sku"></div>
+                      </div>
+                      <div className="skeleton-line skeleton-badge"></div>
+                    </div>
+                    <div className="skeleton-details">
+                      <div className="skeleton-detail-item">
+                        <div className="skeleton-line skeleton-label"></div>
+                        <div className="skeleton-line skeleton-value"></div>
+                      </div>
+                      <div className="skeleton-detail-item">
+                        <div className="skeleton-line skeleton-label"></div>
+                        <div className="skeleton-line skeleton-value"></div>
+                      </div>
+                      <div className="skeleton-detail-item">
+                        <div className="skeleton-line skeleton-label"></div>
+                        <div className="skeleton-line skeleton-value"></div>
+                      </div>
+                      <div className="skeleton-detail-item">
+                        <div className="skeleton-line skeleton-label"></div>
+                        <div className="skeleton-line skeleton-value"></div>
+                      </div>
+                    </div>
+                    <div className="skeleton-controls">
+                      <div className="skeleton-line skeleton-control-label"></div>
+                      <div className="skeleton-line skeleton-control-input"></div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
           ) : products.length === 0 ? (
             <p className="empty-message">
               No products found for these filters.

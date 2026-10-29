@@ -13,7 +13,8 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return res.status(400).json({ message: "Email is already registered." });
@@ -26,8 +27,8 @@ router.post("/register", async (req, res) => {
     const role = userCount === 0 ? "admin" : "staff";
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: normalizedEmail,
       password: hashedPassword,
       role,
     });
@@ -42,6 +43,7 @@ router.post("/register", async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Registration error:", error);
     res.status(500).json({ message: "Could not register user." });
   }
 });
@@ -50,7 +52,12 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password." });
@@ -81,6 +88,7 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ message: "Could not log in." });
   }
 });

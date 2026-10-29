@@ -39,7 +39,7 @@ function AuthPage({ onLogin }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message);
+        throw new Error(data?.message || "Authentication failed.");
       }
 
       if (isRegistering) {
@@ -55,7 +55,13 @@ function AuthPage({ onLogin }) {
 
       onLogin(data);
     } catch (error) {
-      setMessage(error.message || "Something went wrong.");
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        setMessage(
+          "Cannot connect to backend server. Please verify that the server is running on http://localhost:5050"
+        );
+      } else {
+        setMessage(error.message || "Something went wrong.");
+      }
     }
   };
 
