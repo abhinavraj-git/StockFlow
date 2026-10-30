@@ -2,7 +2,7 @@
 
 A full-stack inventory management system built with the MERN stack. StockFlow helps businesses track stock levels, manage product transactions, and control user access through role-based authentication.
 
-**Live Demo:** [https://stockflow-client-jnu9.onrender.com](https://stockflow-client-jnu9.onrender.com)
+**Live Demo:** [https://stock-flow-tan.vercel.app/](https://stock-flow-tan.vercel.app/)
 
 > Note: The backend is hosted on Render's free tier, so it may take 30-50 seconds to spin up on the first request after a period of inactivity.
 
