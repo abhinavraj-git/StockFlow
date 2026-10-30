@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import ProductForm from "./components/ProductForm";
 import StockControls from "./components/StockControls";
@@ -30,6 +30,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showLowStock, setShowLowStock] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileMenuRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({
@@ -158,6 +159,32 @@ function App() {
     setCurrentUser(null);
   };
 
+  useEffect(() => {
+    if (!isProfileOpen) return;
+
+    const handleClickOutside = (event) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isProfileOpen]);
+
   const exportProducts = async () => {
     try {
       const response = await fetch(
@@ -226,8 +253,60 @@ function App() {
             href="#dashboard"
             aria-label="StockFlow dashboard"
           >
-            <span className="brand-mark">S</span>
-            <span>StockFlow</span>
+            <div className="brand-logo-wrap" aria-hidden="true">
+              <svg
+                className="brand-logo-icon"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <linearGradient
+                    id="sf-grad"
+                    x1="0"
+                    y1="0"
+                    x2="32"
+                    y2="32"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop offset="0%" stopColor="#2563eb" />
+                    <stop offset="100%" stopColor="#1d4ed8" />
+                  </linearGradient>
+                </defs>
+                <rect width="32" height="32" rx="9" fill="url(#sf-grad)" />
+                {/* 3D Isometric Inventory Box with dynamic flow */}
+                <path
+                  d="M16 6.5L25 11.2L16 15.9L7 11.2L16 6.5Z"
+                  fill="#ffffff"
+                  fillOpacity="0.95"
+                />
+                <path
+                  d="M7 11.2L16 15.9V25.2L7 20.5V11.2Z"
+                  fill="#bfdbfe"
+                  fillOpacity="0.9"
+                />
+                <path
+                  d="M16 15.9L25 11.2V20.5L16 25.2V15.9Z"
+                  fill="#93c5fd"
+                />
+                <path
+                  d="M16 15.9V24.8"
+                  stroke="#1d4ed8"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M12 9L16 6.8L20 9"
+                  stroke="#2563eb"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <span className="brand-text">
+              Stock<span className="brand-accent">Flow</span>
+            </span>
           </a>
           <nav className="main-nav" aria-label="Main navigation">
             <a href="#dashboard">Dashboard</a>
@@ -235,22 +314,103 @@ function App() {
             <a href="#activity">Activity</a>
             {currentUser.role === "admin" && <a href="#users">Users</a>}
           </nav>
-          <div className="profile-menu">
+          <div className="profile-menu" ref={profileMenuRef}>
             <button
               type="button"
-              className="profile-trigger"
+              className={`profile-trigger ${isProfileOpen ? "is-active" : ""}`}
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               aria-expanded={isProfileOpen}
+              aria-haspopup="true"
+              aria-label="User account menu"
             >
-              {currentUser.name}{" "}
-              <span className="profile-role">({currentUser.role})</span>
-              <span className="chevron">⌄</span>
+              <div className="profile-avatar" aria-hidden="true">
+                <svg
+                  className="person-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <div className="profile-meta">
+                <span className="profile-name">{currentUser.name}</span>
+                <span
+                  className={`profile-badge role-${currentUser.role?.toLowerCase()}`}
+                >
+                  {currentUser.role}
+                </span>
+              </div>
+              <svg
+                className={`profile-chevron ${isProfileOpen ? "open" : ""}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </button>
             {isProfileOpen && (
-              <div className="profile-dropdown">
-                <p>{currentUser.name}</p>
-                <span>{currentUser.role}</span>
-                <button onClick={handleLogout}>Logout</button>
+              <div className="profile-dropdown" role="menu">
+                <div className="dropdown-user-header">
+                  <div className="dropdown-avatar" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                  <div className="dropdown-meta">
+                    <p className="dropdown-name">{currentUser.name}</p>
+                    {currentUser.email && (
+                      <p className="dropdown-email">{currentUser.email}</p>
+                    )}
+                    <span
+                      className={`dropdown-role-pill role-${currentUser.role?.toLowerCase()}`}
+                    >
+                      <span className="role-dot" aria-hidden="true" />
+                      {currentUser.role === "admin"
+                        ? "Administrator"
+                        : "Staff Member"}
+                    </span>
+                  </div>
+                </div>
+                <div className="dropdown-divider" />
+                <button
+                  type="button"
+                  className="dropdown-logout-btn"
+                  onClick={handleLogout}
+                  role="menuitem"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  <span>Sign Out</span>
+                </button>
               </div>
             )}
           </div>

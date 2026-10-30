@@ -101,8 +101,64 @@ function AuthPage({ onLogin }) {
             aria-label="Authorizing"
           />
         )}
-        <p className="label">INVENTORY MANAGEMENT</p>
-        <h1>StockFlow</h1>
+        <div className="auth-brand-header">
+          <div className="brand-logo-wrap" aria-hidden="true">
+            <svg
+              className="brand-logo-icon"
+              viewBox="0 0 32 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient
+                  id="sf-auth-grad"
+                  x1="0"
+                  y1="0"
+                  x2="32"
+                  y2="32"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0%" stopColor="#2563eb" />
+                  <stop offset="100%" stopColor="#1d4ed8" />
+                </linearGradient>
+              </defs>
+              <rect width="32" height="32" rx="9" fill="url(#sf-auth-grad)" />
+              <path
+                d="M16 6.5L25 11.2L16 15.9L7 11.2L16 6.5Z"
+                fill="#ffffff"
+                fillOpacity="0.95"
+              />
+              <path
+                d="M7 11.2L16 15.9V25.2L7 20.5V11.2Z"
+                fill="#bfdbfe"
+                fillOpacity="0.9"
+              />
+              <path
+                d="M16 15.9L25 11.2V20.5L16 25.2V15.9Z"
+                fill="#93c5fd"
+              />
+              <path
+                d="M16 15.9V24.8"
+                stroke="#1d4ed8"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M12 9L16 6.8L20 9"
+                stroke="#2563eb"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <div>
+            <p className="label">INVENTORY MANAGEMENT</p>
+            <h1 className="auth-title">
+              Stock<span className="brand-accent">Flow</span>
+            </h1>
+          </div>
+        </div>
         <p>{isRegistering ? "Create your account." : "Welcome back."}</p>
 
         <form
