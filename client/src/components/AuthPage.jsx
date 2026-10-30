@@ -27,6 +27,7 @@ function AuthPage({ onLogin }) {
     setIsLoading(true);
 
     const endpoint = isRegistering ? "register" : "login";
+    const startTime = Date.now();
 
     try {
       const response = await fetch(
@@ -39,6 +40,13 @@ function AuthPage({ onLogin }) {
           body: JSON.stringify(form),
         }
       );
+
+      // Ensure at least 600ms elapsed so the user clearly sees the rotating
+      // spinner and loading state instead of an instant 10ms flash on localhost.
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 600) {
+        await new Promise((resolve) => setTimeout(resolve, 600 - elapsed));
+      }
 
       const data = await response.json();
 
@@ -62,6 +70,11 @@ function AuthPage({ onLogin }) {
 
       onLogin(data);
     } catch (error) {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 600) {
+        await new Promise((resolve) => setTimeout(resolve, 600 - elapsed));
+      }
+
       if (error.name === "TypeError" && error.message.includes("fetch")) {
         setMessage({
           text: "Cannot connect to backend server. Please verify that the server is running on http://localhost:5050",
@@ -134,7 +147,30 @@ function AuthPage({ onLogin }) {
             className={`auth-submit-btn ${isLoading ? "is-loading" : ""}`}
             disabled={isLoading}
           >
-            {isLoading && <span className="auth-spinner" aria-hidden="true" />}
+            {isLoading && (
+              <svg
+                className="auth-spinner"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="3.5"
+                  strokeOpacity="0.25"
+                />
+                <path
+                  d="M12 2a10 10 0 0 1 10 10"
+                  stroke="currentColor"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
             <span>
               {isLoading
                 ? isRegistering
