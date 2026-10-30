@@ -1,13 +1,14 @@
 import { useState } from "react";
 
 function AuthPage({ onLogin }) {
-  const [isRegistering, setIsRegistering] = useState(true);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
   });
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -20,7 +21,10 @@ function AuthPage({ onLogin }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setMessage("");
+    if (isLoading) return;
+
+    setMessage(null);
+    setIsLoading(true);
 
     const endpoint = isRegistering ? "register" : "login";
 
@@ -43,7 +47,10 @@ function AuthPage({ onLogin }) {
       }
 
       if (isRegistering) {
-        setMessage("Account created. Please sign in.");
+        setMessage({
+          text: "Account created successfully. Please sign in.",
+          type: "success",
+        });
         setIsRegistering(false);
         setForm({
           name: "",
@@ -56,29 +63,47 @@ function AuthPage({ onLogin }) {
       onLogin(data);
     } catch (error) {
       if (error.name === "TypeError" && error.message.includes("fetch")) {
-        setMessage(
-          "Cannot connect to backend server. Please verify that the server is running on http://localhost:5050"
-        );
+        setMessage({
+          text: "Cannot connect to backend server. Please verify that the server is running on http://localhost:5050",
+          type: "error",
+        });
       } else {
-        setMessage(error.message || "Something went wrong.");
+        setMessage({
+          text: error.message || "Something went wrong.",
+          type: "error",
+        });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <main className="auth-page">
-      <section className="auth-card">
+      <section className="auth-card" aria-live="polite">
+        {isLoading && (
+          <div
+            className="auth-progress-bar"
+            role="progressbar"
+            aria-label="Authorizing"
+          />
+        )}
         <p className="label">INVENTORY MANAGEMENT</p>
         <h1>StockFlow</h1>
         <p>{isRegistering ? "Create your account." : "Welcome back."}</p>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form
+          className="auth-form"
+          onSubmit={handleSubmit}
+          aria-busy={isLoading}
+        >
           {isRegistering && (
             <input
               name="name"
               value={form.name}
               onChange={handleChange}
               placeholder="Full name"
+              disabled={isLoading}
               required
             />
           )}
@@ -89,6 +114,7 @@ function AuthPage({ onLogin }) {
             value={form.email}
             onChange={handleChange}
             placeholder="Email address"
+            disabled={isLoading}
             required
           />
 
@@ -99,22 +125,47 @@ function AuthPage({ onLogin }) {
             onChange={handleChange}
             placeholder="Password"
             minLength="6"
+            disabled={isLoading}
             required
           />
 
-          <button type="submit">
-            {isRegistering ? "Create Account" : "Sign In"}
+          <button
+            type="submit"
+            className={`auth-submit-btn ${isLoading ? "is-loading" : ""}`}
+            disabled={isLoading}
+          >
+            {isLoading && <span className="auth-spinner" aria-hidden="true" />}
+            <span>
+              {isLoading
+                ? isRegistering
+                  ? "Creating account..."
+                  : "Signing in..."
+                : isRegistering
+                ? "Create Account"
+                : "Sign In"}
+            </span>
           </button>
         </form>
 
-        {message && <p className="auth-message">{message}</p>}
+        {message && (
+          <div
+            className={`auth-message ${message.type}`}
+            role={message.type === "error" ? "alert" : "status"}
+          >
+            <span className="auth-message-icon" aria-hidden="true">
+              {message.type === "error" ? "⚠" : "✓"}
+            </span>
+            <span>{message.text}</span>
+          </div>
+        )}
 
         <button
           type="button"
           className="auth-switch"
+          disabled={isLoading}
           onClick={() => {
             setIsRegistering(!isRegistering);
-            setMessage("");
+            setMessage(null);
           }}
         >
           {isRegistering
